@@ -1,0 +1,28 @@
+name: Auto Update M3U Playlist
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Setiap 6 jam
+  workflow_dispatch:       # Boleh run manual juga
+
+jobs:
+  update-playlist:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Download M3U file from source
+        run: |
+          curl -L "https://raw.githubusercontent.com/palabatu/iptv/refs/heads/main/phg" -o phg.m3u
+
+      - name: Commit and push updated playlist
+        env:
+          GH_PAT: ${{ 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 }}
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git remote set-url origin https://x-access-token:${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}@github.com/${{ github.repository }}
+          git add phg.m3u
+          git commit -m "Auto update M3U playlist" || echo "No changes to commit"
+          git push
